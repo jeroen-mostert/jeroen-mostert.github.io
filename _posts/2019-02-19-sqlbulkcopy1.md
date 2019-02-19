@@ -1,3 +1,8 @@
+---
+layout: post
+title: The Perils and Pitfalls of SqlBulkCopy (part 1)
+---
+
 Eric Lippert has written about the concept of the ["Pit of Quality"](https://blogs.msdn.microsoft.com/ericlippert/2007/08/14/c-and-the-pit-of-despair/) -- designing a language so the rules guide developers towards writing correct code, and actively make it harder to write incorrect code.
 
 [`SqlBulkCopy`](https://docs.microsoft.com/dotnet/api/system.data.sqlclient.sqlbulkcopy) is a class with a lot of design decisions that seem tailor made to prevent developers from falling into the Pit of Quality, and produce decidedly worse results instead. This matters especially because, by its very nature, `SqlBulkCopy` is intended to expose an efficient mechanism for loading lots of data into SQL Server, and yet it seems designed to make sure it actually loads data in the slowest way possible, by virtue of its defaults -- and before you even get to loading the data, there's plenty of pits to fall in.
