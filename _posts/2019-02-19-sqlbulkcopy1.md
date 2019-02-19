@@ -1,6 +1,6 @@
 ---
 layout: post
-title: The Perils and Pitfalls of `SqlBulkCopy` (part 1)
+title: The Perils and Pitfalls of SqlBulkCopy (part 1)
 ---
 
 Eric Lippert has written about the concept of the ["Pit of Quality"](https://blogs.msdn.microsoft.com/ericlippert/2007/08/14/c-and-the-pit-of-despair/) -- designing a language so the rules guide developers towards writing correct code, and actively make it harder to write incorrect code.
