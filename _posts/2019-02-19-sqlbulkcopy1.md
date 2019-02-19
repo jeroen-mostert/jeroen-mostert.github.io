@@ -132,7 +132,7 @@ Wait, what? How did we get this bizarre result? Well, unless you explicitly tell
 
 This is obviously the Wrong Thing to do. If the fact that we gave it column names wasn't enough, depending on the physical order of columns in a database table is a Bad Idea -- this order doesn't logically matter, and about the only place where you can see it is if you do a `SELECT *`. The fix isn't hard, all we have to do is add the following:
 
-```
+```csharp
 foreach (DataColumn column in dt.Columns) {
     sqlBulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
 }
