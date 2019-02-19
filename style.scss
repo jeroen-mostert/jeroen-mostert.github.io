@@ -142,6 +142,21 @@ img {
     clear: both;
 }
 
+table {
+    display: block;
+    overflow: auto;
+    width: 100%;
+}
+
+table tr {
+    background-color: #fff;
+    border-top: 1px solid #c6cbd1;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
 /*********************/
 /* LAYOUT / SECTIONS */
 /*********************/
