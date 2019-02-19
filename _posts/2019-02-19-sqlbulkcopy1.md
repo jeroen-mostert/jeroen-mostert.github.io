@@ -1,8 +1,3 @@
----
-layout: post
-title: The Perils and Pitfalls of SqlBulkCopy (part 1)
----
-
 Eric Lippert has written about the concept of the ["Pit of Quality"](https://blogs.msdn.microsoft.com/ericlippert/2007/08/14/c-and-the-pit-of-despair/) -- designing a language so the rules guide developers towards writing correct code, and actively make it harder to write incorrect code.
 
 [`SqlBulkCopy`](https://docs.microsoft.com/dotnet/api/system.data.sqlclient.sqlbulkcopy) is a class with a lot of design decisions that seem tailor made to prevent developers from falling into the Pit of Quality, and produce decidedly worse results instead. This matters especially because, by its very nature, `SqlBulkCopy` is intended to expose an efficient mechanism for loading lots of data into SQL Server, and yet it seems designed to make sure it actually loads data in the slowest way possible, by virtue of its defaults -- and before you even get to loading the data, there's plenty of pits to fall in.
@@ -17,17 +12,17 @@ CREATE TABLE Widgets(
     [Name] NVARCHAR(100), 
     [WeightInGrams] INT
 )
-````
+```
     
 Let's also say we've got a file that contains a load of widget definitions from elsewhere that looks like this:
 
-````
+```
 1	azultronic radiator	2.60
 12	boson catcher	0.43
 15	nuclear accelerator	10.0
 21	screw	0.045
 ...
-````
+```
 
 In this file, the columns are separated by tabs, and the weight is sneakily given in kilograms, rather than grams, just so our application has something to do and you couldn't just import this with a wizard. The ID has been given to us from another database, and even though it's an identity, we'd like to preserve it because, for better or worse, we've come to depend on these values. (Isn't that just how these things go?)
 
@@ -40,7 +35,7 @@ These solutions all have their pros and cons, and for a simple scenario like thi
 
 Let's first cook up some code to read the file. I'm going to use the simplest thing that could possibly work, as that's usually a nice place to start...
 
-````csharp
+```csharp
 class Widget {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -57,23 +52,23 @@ IEnumerable<Widget> ReadFromFile(string fileName) {
         };
     }
 }
-````
+```
 
 This code is quite naive, having no way to nicely handle input errors, but let's look past that for the moment and figure out how to get it imported into our table.
 
 Here we hit our first speed bump. The method in `SqlBulkCopy` that actually performs the work is `WriteToServer`, which has the following overloads:
 
-````csharp
+```csharp
 WriteToServer(DataTable, DataRowState)
 WriteToServer(IDataReader)
 WriteToServer(DataTable)
 WriteToServer(DbDataReader)
 WriteToServer(DataRow[])
-````
+```
     
 Since implementing `IDataReader` looks like quite a bit of work, and `DataRow` has no public constructors, it looks like `DataTable` is the way to go. We could re-tool our existing code to directly read things in a `DataTable`, but let's say I like the current separation of concerns and would rather have this as a separate step. Writing our bulk import code is a simple affair:
 
-````csharp
+```csharp
 var dt = new DataTable();
 dt.Columns.Add("Id");
 dt.Columns.Add("Name");
@@ -92,7 +87,7 @@ using (var connection = new SqlConnection("Data Source=.;Initial Catalog=Widgets
         sqlBulkCopy.WriteToServer(dt);
     }
 }
-````
+```
 
 If we run this code, our resulting table will end up like this:
 
@@ -107,7 +102,7 @@ Wait, what happened to our `ID`? Well, remember that `ID` is an `IDENTITY`. By d
 
 Here I'd like to make a little aside -- suppose this is exactly what you wanted, and the input file had no `ID`. How would you perform the bulk copy in that case? It would seem obvious to simply leave it out and do this:
 
-````csharp
+```csharp
 var dt = new DataTable();
 dt.Columns.Add("Name");
 dt.Columns.Add("WeightInGrams");
@@ -117,7 +112,7 @@ foreach (var widget in ReadFromFile(@"widgets.txt")) {
     row["WeightInGrams"] = widget.WeightInGrams;
     dt.Rows.Add(row);
 }
-````
+```
         
 Alright, let's try that:
 
@@ -132,19 +127,19 @@ Wait, what? How did we get this bizarre result? Well, unless you explicitly tell
 
 This is obviously the Wrong Thing to do. If the fact that we gave it column names wasn't enough, depending on the physical order of columns in a database table is a Bad Idea -- this order doesn't logically matter, and about the only place where you can see it is if you do a `SELECT *`. The fix isn't hard, all we have to do is add the following:
 
-````
+```
 foreach (DataColumn column in dt.Columns) {
     sqlBulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
 }
-````
+```
 
 But the fact that we have to add this at all seems clumsy, to say the least.
 
 Back to our original scenario -- we want our supplied `ID` to be respected. This requires an explicit option:
 
-````csharp
+```csharp
 using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.KeepIdentity, null)) {
-````
+```
     
 Why is this an option you have to pass to the constructor, instead of a property, or an argument you can pass to `WriteToServer`? Well, um, it just is -- no reason I can think of. We now also have to pass an explicit `null` for `SqlTransaction`, even though we're not using that. So now we run that, and:
 
