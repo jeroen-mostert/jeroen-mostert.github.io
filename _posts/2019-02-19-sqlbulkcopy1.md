@@ -148,7 +148,7 @@ using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.KeepIden
     
 Why is this an option you have to pass to the constructor, instead of a property, or an argument you can pass to `WriteToServer`? Well, um, it just is -- no reason I can think of. We now also have to pass an explicit `null` for `SqlTransaction`, even though we're not using that. So now we run that, and:
 
-> Unhandled Exception: System.InvalidOperationException: The given ColumnMapping does not match up with any column in the source or destination.
+> System.InvalidOperationException: The given ColumnMapping does not match up with any column in the source or destination.
     
 What now? How did we displease the `SqlBulkCopy` gods this time? I'll just come out and tell you, since you could waste quite a bit of time trying to puzzle it out otherwise: in our table, the column is spelled `ID`, with a capital `D`, but in our `DataTable` we've used `Id`, to match the property name. If you're like a lot of people, your database will use a case-insensitive collation, so you don't normally notice such mismatches. `SqlBulkCopy` performs an ordinal comparison, however, and does not care for sloppiness. Still, you would think it could be nice and *tell* us which columns, exactly, fail to map -- but no such luck. (And note how it did not complain when the `KeepIdentity` option was not supplied, because it ignored the whole column in the first place!)
 
