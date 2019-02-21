@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Interlude: the Perils and Pitfalls of `BULK INSERT`
+title: Interlude: the Perils and Pitfalls of BULK INSERT
 ---
 
 As I've been [ranting against `SqlBulkCopy`](/sqlbulkcopy1), here's a brief interlude about how not *everything* is its fault.
