@@ -161,4 +161,4 @@ If we fix our column spelling, we finally obtain the desired result:
 | 15 | nuclear accelerator |         10000 |
 | 21 | screw               |            45 |
 
-Great! Are we done? Well, as long as we're content with importing only four rows into an empty table, yes, we're done. That, however, is hardly what we need `SqlBulkCopy` for -- what about inserting *lots* of data? Well... there will be more about that in part 2.
+Great! Are we done? Well, as long as we're content with importing only four rows into an empty table, yes, we're done. That, however, is hardly what we need `SqlBulkCopy` for -- what about inserting *lots* of data? Well... there will be more about that in [part 2](/sqlbulkcopy2).
