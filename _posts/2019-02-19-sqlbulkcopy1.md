@@ -88,7 +88,7 @@ foreach (var widget in ReadFromFile(@"widgets.txt")) {
 using (var connection = new SqlConnection("Data Source=.;Initial Catalog=Widgets;Integrated Security=SSPI")) {
     connection.Open();
     using (var sqlBulkCopy = new SqlBulkCopy(connection)) {
-        sqlBulkCopy.DestinationTableName = "WidgetView";
+        sqlBulkCopy.DestinationTableName = "Widgets";
         sqlBulkCopy.WriteToServer(dt);
     }
 }
